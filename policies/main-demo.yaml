@@ -1,0 +1,19 @@
+rules:
+  - id: demo-main-critical-warn
+    action: warn
+    match:
+      severity: critical
+    justification: Demo mode for fixed branch; residual base-image criticals are tracked.
+    expires: 2026-06-30
+
+  - id: block-kev
+    action: block
+    match:
+      kev: true
+    justification: Known exploited vulnerabilities remain blocked.
+
+  - id: warn-high
+    action: warn
+    match:
+      severity: high
+    justification: High vulnerabilities are reported for remediation.
