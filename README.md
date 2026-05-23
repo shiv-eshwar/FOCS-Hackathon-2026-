@@ -61,6 +61,7 @@ git checkout main
 - Open latest run for `main` branch.
 - Show `security-scan` passed.
 - Show `deploy-simulation` passed and health-check curl output.
+- Show `publish-pages` passed and open the Pages URL from job output.
 
 ### 5) Show live local site + report
 
@@ -70,6 +71,20 @@ bash run-local-demo.sh
 
 - Site opens at `http://localhost:8080`
 - Reports generated in `reports/report.html` and `reports/report.json`
+
+## Public hosting (GitHub Pages)
+
+The same CI workflow also publishes the static landing page from `app/` to GitHub Pages when pushes to `main` pass the security scan.
+
+One-time repo setup:
+
+1. Go to GitHub -> `Settings` -> `Pages`.
+2. Under `Build and deployment`, set `Source` to `GitHub Actions`.
+3. Save.
+
+After the next successful `main` run, the `publish-pages` job outputs your public URL in this format:
+
+- `https://<your-username>.github.io/<your-repo-name>/`
 
 ## Scanner usage
 
