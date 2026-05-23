@@ -1,6 +1,8 @@
 services:
   scanner:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/scanner.Dockerfile
     environment:
       - IMAGE_NAME=${IMAGE_NAME:-nginx:1.14}
     volumes:

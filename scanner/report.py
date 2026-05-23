@@ -8,6 +8,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 from rich.console import Console
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
 
@@ -28,8 +29,15 @@ def render_terminal(report: ScanReport) -> None:
     summary = report.summary
 
     banner_color = "red" if summary.ci_block or report.policy.action == "block" else "green"
-    banner_text = "PIPELINE BLOCKED" if banner_color == "red" else "PIPELINE CLEAR"
-    console.print(Panel.fit(banner_text, style=f"bold {banner_color}"))
+    banner_text = "❌ PIPELINE BLOCKED" if banner_color == "red" else "✅ PIPELINE CLEAR"
+    panel_body = Padding(
+        f"[bold white]{banner_text}[/bold white]\n"
+        f"[dim]Project: {report.metadata.get('project', 'N/A')} | "
+        f"Branch: {report.metadata.get('branch', 'N/A')} | "
+        f"Commit: {report.metadata.get('commit_sha', 'N/A')}[/dim]",
+        (1, 4),
+    )
+    console.print(Panel(panel_body, style=f"bold {banner_color}", expand=True))
 
     summary_table = Table(title="Scan Summary")
     summary_table.add_column("Metric")
@@ -43,6 +51,12 @@ def render_terminal(report: ScanReport) -> None:
     summary_table.add_row("Low", str(summary.low_count))
     summary_table.add_row("KEV", str(summary.kev_count))
     summary_table.add_row("Policy Action", report.policy.action.upper())
+    summary_table.add_row(
+        "Packages Scanned", str(report.metadata.get("total_packages_scanned", "N/A"))
+    )
+    summary_table.add_row(
+        "Scan Duration", f"{report.metadata.get('scan_duration_seconds', 'N/A')}s"
+    )
     console.print(summary_table)
 
     findings_table = Table(title="Vulnerabilities")
@@ -68,6 +82,10 @@ def render_terminal(report: ScanReport) -> None:
             f"{finding.score:.2f}",
         )
     console.print(findings_table)
+    console.print(
+        "[dim]Legend: red=critical, orange=high, yellow=medium, blue=low. "
+        f"Syft={_tool_version(report, 'syft')} | Grype={_tool_version(report, 'grype')}[/dim]"
+    )
 
 
 def write_json(report: ScanReport, output_path: Path) -> None:
@@ -89,10 +107,13 @@ def write_html(report: ScanReport, template_dir: Path, output_path: Path) -> Non
     }
     top_packages = _top_packages(report.to_dict())
 
+    is_blocked = report.summary.ci_block or report.policy.action == "block"
     html = template.render(
         report=report.to_dict(),
         severity_counts=severity_counts,
         top_packages=top_packages,
+        status_text="BLOCKED" if is_blocked else "CLEAR",
+        status_class="blocked" if is_blocked else "clear",
         bypasses=[
             "Static stripped binaries can hide vulnerable components.",
             "Runtime-injected libraries are outside static image SBOM visibility.",
@@ -100,6 +121,13 @@ def write_html(report: ScanReport, template_dir: Path, output_path: Path) -> Non
         ],
     )
     output_path.write_text(html, encoding="utf-8")
+
+
+def write_both(report: ScanReport, template_dir: Path, output_dir: Path) -> None:
+    """Write JSON and HTML reports to a directory."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    write_json(report, output_dir / "report.json")
+    write_html(report, template_dir, output_dir / "report.html")
 
 
 def _top_packages(report_payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -116,3 +144,10 @@ def _format_epss(value: float | None) -> str:
     if value is None:
         return "-"
     return f"{value:.3f}"
+
+
+def _tool_version(report: ScanReport, tool_name: str) -> str:
+    versions = report.metadata.get("tool_versions", {})
+    if isinstance(versions, dict):
+        return str(versions.get(tool_name, "unknown"))
+    return "unknown"

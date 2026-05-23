@@ -51,3 +51,26 @@ def extract_packages(sbom_data: dict[str, Any]) -> list[dict[str, str]]:
             continue
         packages.append({"name": name, "version": version, "purl": purl})
     return packages
+
+
+def syft_version() -> str:
+    """Return syft version string if available."""
+    if shutil.which("syft") is None:
+        return "unavailable"
+
+    result = subprocess.run(
+        ["syft", "version", "-o", "json"],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    if result.returncode != 0:
+        return "unknown"
+
+    try:
+        payload = cast(dict[str, Any], json.loads(result.stdout))
+    except json.JSONDecodeError:
+        return "unknown"
+
+    return str(payload.get("version", "unknown"))

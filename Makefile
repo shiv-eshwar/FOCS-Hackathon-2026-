@@ -1,7 +1,7 @@
 PYTHON ?= python3
 IMAGE ?= nginx:1.14
 
-.PHONY: install scan demo ci-check report test lint typecheck
+.PHONY: install scan demo ci-check report test lint typecheck demo-local demo-setup landing
 
 install:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -28,3 +28,13 @@ lint:
 
 typecheck:
 	mypy scanner main.py
+
+demo-local:
+	bash run-local-demo.sh
+
+demo-setup:
+	bash setup-demo.sh
+
+landing:
+	docker build -t vaultshield-app:landing .
+	docker run --rm -p 8080:80 vaultshield-app:landing

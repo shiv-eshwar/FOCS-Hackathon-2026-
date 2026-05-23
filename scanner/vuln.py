@@ -103,3 +103,26 @@ def _parse_published_date(vulnerability: dict[str, Any]) -> date | None:
         return date.fromisoformat(published_raw[:10])
     except ValueError:
         return None
+
+
+def grype_version() -> str:
+    """Return grype version string if available."""
+    if shutil.which("grype") is None:
+        return "unavailable"
+
+    result = subprocess.run(
+        ["grype", "version", "-o", "json"],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    if result.returncode != 0:
+        return "unknown"
+
+    try:
+        payload = cast(dict[str, Any], json.loads(result.stdout))
+    except json.JSONDecodeError:
+        return "unknown"
+
+    return str(payload.get("version", "unknown"))

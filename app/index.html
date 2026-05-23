@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VaultShield | Zero-Trust Container Security</title>
+  <style>
+    :root {
+      --bg: #060912;
+      --bg-soft: #101a2b;
+      --card: #0f172a;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #38bdf8;
+      --accent: #22d3ee;
+      --border: #1e293b;
+      --success: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #0f1b33, var(--bg) 45%);
+      line-height: 1.6;
+    }
+
+    .container {
+      width: min(1100px, 92vw);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 90px 0 50px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(34, 211, 238, 0.08);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      line-height: 1.15;
+      margin: 0 0 14px;
+    }
+
+    .tagline {
+      margin: 0 auto;
+      max-width: 740px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .cta-row {
+      margin-top: 32px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      color: #001018;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      font-weight: 700;
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+
+    section {
+      padding: 34px 0;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.65rem;
+    }
+
+    .section-lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.08), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      min-height: 190px;
+    }
+
+    .card h3 {
+      margin: 4px 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .steps .card {
+      min-height: 160px;
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.08), rgba(15, 23, 42, 0.9));
+    }
+
+    .step-number {
+      color: var(--success);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+    }
+
+    .cta {
+      margin: 36px 0 58px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(120deg, rgba(56, 189, 248, 0.14), rgba(2, 6, 23, 0.88));
+      padding: 30px;
+      text-align: center;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 0 30px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <span class="badge">Supply Chain Defense, Automated</span>
+      <h1>VaultShield</h1>
+      <p class="tagline">Zero-Trust Container Security for Modern DevOps</p>
+      <p class="tagline">
+        Stop vulnerable images before production. VaultShield scans every build,
+        enforces policy-as-code, and gives your team clear remediation actions in seconds.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#how-it-works">See It In Action</a>
+        <a class="btn btn-secondary" href="#features">Explore Features</a>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>Why teams choose VaultShield</h2>
+      <p class="section-lead">
+        Built for fast-moving engineering teams that need actionable security
+        controls directly in CI/CD, without slowing releases.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <h3>Real-Time CI Security Gate</h3>
+          <p class="muted">
+            Every push is scanned automatically. Critical vulnerabilities fail the
+            pipeline before deployment can happen.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Risk-Aware Prioritization</h3>
+          <p class="muted">
+            Severity, exploitability, and policy signals are combined into a single
+            risk view so teams fix what matters first.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Evidence-Rich Reports</h3>
+          <p class="muted">
+            Downloadable JSON and HTML reports include CVE details, mitigation
+            guidance, and ATT&amp;CK-aligned context for audit and leadership.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="steps">
+      <h2>How it works</h2>
+      <p class="section-lead">
+        Three steps to enforce zero-trust container delivery.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <div class="step-number">STEP 01</div>
+          <h3>Build &amp; Generate SBOM</h3>
+          <p class="muted">
+            VaultShield inspects each image and creates a complete software bill
+            of materials for package-level visibility.
+          </p>
+        </article>
+        <article class="card">
+          <div class="step-number">STEP 02</div>
+          <h3>Detect &amp; Score Vulnerabilities</h3>
+          <p class="muted">
+            CVEs are mapped, scored, and evaluated against your security policy
+            so teams know if the release should proceed.
+          </p>
+        </article>
+        <article class="card">
+          <div class="step-number">STEP 03</div>
+          <h3>Gate &amp; Report</h3>
+          <p class="muted">
+            Unsafe images are blocked automatically. Clean images pass and deploy
+            with full traceability artifacts.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>Ship fast. Ship secure.</h2>
+      <p class="section-lead" style="margin: 0 auto 18px;">
+        Bring zero-trust controls into your build pipeline and prove security posture
+        to stakeholders in every release.
+      </p>
+      <a class="btn btn-primary" href="#">Start Secure Delivery</a>
+    </section>
+  </main>
+
+  <footer>
+    Protected by VaultShield Container Scanner
+  </footer>
+</body>
+</html>
