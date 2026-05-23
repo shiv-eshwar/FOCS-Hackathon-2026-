@@ -1,161 +1,147 @@
 # VaultShield Container Security Scanner
 
-VaultShield is a CI/CD security gate that blocks deployment of vulnerable container images and allows deploy simulation only when security policy passes.
+[![CI](https://github.com/shiv-eshwar/FOCS-Hackathon-2026-/actions/workflows/ci.yml/badge.svg)](https://github.com/shiv-eshwar/FOCS-Hackathon-2026-/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## What this demo proves
+VaultShield is an open-source container security gate for CI/CD pipelines. It generates an SBOM, scans vulnerabilities, applies policy-based gating, and produces actionable reports before deployment.
 
-A real project (VaultShield landing page) is containerized in two variants:
+## Why VaultShield
 
-- Vulnerable image: `nginx:1.14` (`Dockerfile.vulnerable`) -> pipeline fails.
-- Fixed image: `nginx:1.25-alpine` (`Dockerfile`) -> pipeline passes and deploy simulation runs.
+Teams frequently deploy container images without enforcing vulnerability checks in CI. VaultShield converts scanning from an informational step into an enforceable release control.
 
-This demonstrates supply-chain protection with evidence in GitHub Actions artifacts.
+## Key Features
 
-## How it works in 5 steps
+- SBOM generation with Syft (`scanner/sbom.py`)
+- CVE matching with Grype (`scanner/vuln.py`)
+- Risk scoring and severity summarization (`scanner/scorer.py`)
+- Policy-as-code gate with non-zero exit blocking (`scanner/policy.py`, `main.py`)
+- Rich terminal output and JSON/HTML reports (`scanner/report.py`, `templates/report.html`)
+- GitHub Actions integration with artifact upload and deployment gating (`.github/workflows/ci.yml`)
+- Public static landing-page publishing through GitHub Pages
 
-1. Build application image in CI (`vaultshield-app:$GITHUB_SHA`).
-2. Generate SBOM with Syft and detect CVEs with Grype.
-3. Enrich and score findings, then evaluate policy gate.
-4. Emit terminal output + JSON + HTML reports.
-5. Fail pipeline on critical vulnerabilities; otherwise continue to deploy simulation.
+## Architecture Overview
 
-## Demo instructions (live in front of judges)
+```text
+Developer Push
+  -> GitHub Actions (VaultShield Security Gate)
+     -> Build container image
+     -> Generate SBOM (Syft)
+     -> Scan vulnerabilities (Grype)
+     -> Score + evaluate policy
+     -> Emit JSON/HTML artifacts
+     -> Exit code gate:
+          0 = allow downstream jobs
+          1 = block deployment
+```
 
-### 1) Prepare local environment
+## Quick Start
+
+### Prerequisites
+
+- Docker
+- Python 3.11+
+- Syft
+- Grype
+
+### Install
 
 ```bash
+git clone https://github.com/shiv-eshwar/FOCS-Hackathon-2026-.git
+cd FOCS-Hackathon-2026-
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Install scanner binaries:
+Install scanner binaries (if missing):
 
 ```bash
-curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+mkdir -p "$HOME/.local/bin"
+curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b "$HOME/.local/bin"
+curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
-### 2) Prepare demo branches
+### Run a Scan
+
+```bash
+python main.py \
+  --image nginx:1.14 \
+  --output both \
+  --reports-dir reports \
+  --fail-on critical \
+  --policy policies/default.yaml \
+  --project "VaultShield Demo App" \
+  --branch local
+```
+
+Exit codes:
+
+- `0` -> pass / continue pipeline
+- `1` -> blocked by policy or gate thresholds
+- `2` -> scanner runtime/tooling error
+
+## CI/CD Integration
+
+Use `.github/workflows/ci.yml` as reference. The pipeline:
+
+1. Builds image from the current commit
+2. Runs VaultShield scanner
+3. Uploads report artifacts (`reports/`)
+4. Blocks deploy-simulation when gate fails
+5. Publishes static landing page to GitHub Pages when `main` passes
+
+## Demo Flow (Red -> Green)
+
+- `vulnerable` branch: `Dockerfile.vulnerable` (`nginx:1.14`) -> expected fail
+- `main` branch: fixed Dockerfile + main policy -> expected pass
+
+Useful scripts:
 
 ```bash
 bash setup-demo.sh
-```
-
-Push both branches:
-
-```bash
-git checkout main && git push -u origin main
-git checkout vulnerable && git push -u origin vulnerable
-git checkout main
-```
-
-### 3) Show failure in GitHub Actions
-
-- Open Actions tab -> workflow `VaultShield Security Gate`.
-- Open latest run for `vulnerable` branch.
-- Show failed `security-scan` job and downloaded report artifact.
-
-### 4) Show pass + deploy simulation
-
-- Open latest run for `main` branch.
-- Show `security-scan` passed.
-- Show `deploy-simulation` passed and health-check curl output.
-- Show `publish-pages` passed and open the Pages URL from job output.
-
-### 5) Show live local site + report
-
-```bash
 bash run-local-demo.sh
 ```
 
-- Site opens at `http://localhost:8080`
-- Reports generated in `reports/report.html` and `reports/report.json`
+## Documentation
 
-## Public hosting (GitHub Pages)
+- Setup guide: [`INSTALL.md`](INSTALL.md)
+- Threat model: [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md)
+- Bypasses/limitations: [`docs/BYPASSES.md`](docs/BYPASSES.md)
+- Code comments evidence: [`docs/CODE_COMMENTS.md`](docs/CODE_COMMENTS.md)
+- Presentation script: [`presentation.md`](presentation.md)
+- Submission index: [`FINAL_SUBMISSION.md`](FINAL_SUBMISSION.md)
 
-The same CI workflow also publishes the static landing page from `app/` to GitHub Pages when pushes to `main` pass the security scan.
+## MITRE ATT&CK Alignment
 
-One-time repo setup:
+Primary mapping: **T1195.001 - Compromise Software Dependencies and Development Tools**.
 
-1. Go to GitHub -> `Settings` -> `Pages`.
-2. Under `Build and deployment`, set `Source` to `GitHub Actions`.
-3. Save.
+VaultShield mitigates this technique by enforcing supply-chain scanning before artifact promotion.
 
-After the next successful `main` run, the `publish-pages` job outputs your public URL in this format:
+## Contributing
 
-- `https://<your-username>.github.io/<your-repo-name>/`
+Contributions are welcome. For meaningful changes:
 
-## Scanner usage
+1. Create a feature branch
+2. Run local checks:
+   ```bash
+   .venv/bin/ruff check .
+   .venv/bin/mypy scanner main.py
+   .venv/bin/pytest -q
+   ```
+3. Open a pull request with a clear summary and test evidence
 
-```bash
-python main.py --image nginx:1.14 --output terminal
-python main.py --image vaultshield-app:demo --output both --reports-dir reports --project "VaultShield Demo App" --branch main
-```
+## Security
 
-## Architecture (ASCII)
+If you find a vulnerability in this project, please open a private report with reproduction details, affected versions, and potential impact.
 
-```text
-Developer Push
-   -> GitHub Actions (.github/workflows/ci.yml)
-      -> Build vaultshield image
-      -> Run VaultShield scanner (main.py)
-         -> scanner/sbom.py (Syft)
-         -> scanner/vuln.py (Grype)
-         -> scanner/scorer.py + scanner/policy.py
-         -> scanner/report.py (terminal + JSON + HTML)
-      -> Upload security report artifact
-      -> If gate passed: deploy-simulation job
-```
+## Roadmap
 
-## MITRE ATT&CK T1195.001 mapping
+- Reusable GitHub Action package (`uses: ...`)
+- PyPI distribution for `pip install`
+- Registry admission controls and signed-image verification
+- Centralized exception workflow with approvals and expiry
 
-**Technique:** T1195.001 - Compromise Software Dependencies and Development Tools
+## License
 
-### Threat behavior
-
-Attackers exploit vulnerable dependencies inherited via container base images and packaged libraries.
-
-### VaultShield defense
-
-- Scans image components before deployment.
-- Blocks critical findings through policy and exit codes.
-- Generates audit-grade reports with exact vulnerable package/CVE evidence.
-
-### Why this is valid for PS-15
-
-The scanner enforces a pre-deployment control in the software supply chain and prevents vulnerable artifacts from promotion into production paths.
-
-## Tech stack
-
-- Python 3.11+
-- Syft (SBOM)
-- Grype (vulnerability matching)
-- Rich (terminal reporting)
-- Jinja2 (HTML report rendering)
-- Chart.js CDN (report charts)
-- Docker / nginx (`1.14` vulnerable, `1.25-alpine` fixed)
-- GitHub Actions
-
-## PS-15 rubric checklist
-
-- [x] Core functionality: scans real images and blocks on critical findings.
-- [x] Correctness: tested scanner modules and deterministic CLI behavior.
-- [x] Complexity: policy gate, scoring, metadata-rich reporting, CI integration.
-- [x] Code quality: modular scanner package with lint/type/test checks.
-- [x] Threat model and ATT&CK alignment: documented in `docs/THREAT_MODEL.md`.
-- [x] Attack/defense validity: vulnerable branch fails, fixed branch passes.
-- [x] Limitations and bypasses: documented in `docs/BYPASSES.md`.
-- [x] Architecture fit and feasibility: CI workflow + deploy simulation.
-- [x] Communication/demo clarity: scripted branch/setup/demo flows.
-- [x] Documentation completeness: setup, usage, mapping, architecture, checklist.
-
-## Useful commands
-
-```bash
-make lint
-make typecheck
-make test
-make demo-setup
-make demo-local
-```
+Licensed under the [MIT License](LICENSE).
