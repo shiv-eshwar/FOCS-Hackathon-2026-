@@ -1,0 +1,25 @@
+rules:
+  - id: block-critical
+    action: block
+    match:
+      severity: critical
+    justification: Critical vulnerabilities are blocked by default.
+
+  - id: block-kev
+    action: block
+    match:
+      kev: true
+    justification: Known exploited vulnerabilities are blocked.
+
+  - id: warn-high-epss
+    action: warn
+    match:
+      epss_gte: 0.7
+    justification: High EPSS vulnerabilities require urgent triage.
+
+  - id: temporary-exception-example
+    action: ignore
+    match:
+      cve: CVE-2099-9999
+    justification: Temporary risk acceptance for development sandbox.
+    expires: 2099-12-31

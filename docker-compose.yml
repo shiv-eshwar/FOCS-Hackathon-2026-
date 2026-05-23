@@ -1,0 +1,8 @@
+services:
+  scanner:
+    build: .
+    environment:
+      - IMAGE_NAME=${IMAGE_NAME:-nginx:1.14}
+    volumes:
+      - ./:/app
+    command: ["--image", "${IMAGE_NAME:-nginx:1.14}", "--output", "html", "--report-file", "/app/report.html"]

@@ -1,0 +1,11 @@
+{
+  "findings": [
+    {
+      "cve_id": "CVE-2022-0002",
+      "package": "glibc",
+      "installed_version": "2.31",
+      "severity": "High",
+      "score": 8.00
+    }
+  ]
+}
